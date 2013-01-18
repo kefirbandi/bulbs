@@ -607,6 +607,21 @@ class RexsterClient(Client):
         params = dict(_id=_id,label=label,start=start,limit=limit)
         return self.gremlin(script,params)
 
+    def custom_step(self, _id, script):
+        """
+        Execute a custom gremlin step starting from the object
+        """
+
+        full_script = 'g.v(_id).'+script
+        params = dict(_id=_id)
+        return self.gremlin(full_script,params)
+
+    def equal_properties(self,a_id,b_id,base_type):
+        
+        script = "ElementHelper.haveEqualProperties(g.%s(a),g.%s(b))" % (base_type[0],base_type[0])
+        params = dict(a=a_id, b=b_id)
+        return self.gremlin(script,params)
+        
     # Index Proxy - General
 
     def get_all_indices(self):

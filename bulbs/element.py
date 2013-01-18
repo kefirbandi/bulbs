@@ -342,6 +342,27 @@ class Element(object):
         log.debug("This is deprecated; use data() instead.")
         return self.data()
 
+    def custom_step(self,script):
+        """
+        Execute a custom gremlin step starting from the current element.
+        """
+        resp = self._client.custom_step(self._id, script)
+        return initialize_elements(self._client,resp)
+        
+    def equivalent(self,other):
+        """
+        Checks if this element is equivalent to the other.
+        
+        Equivalent if they have the same properties and are the same type
+        (both edges or both vertices)
+        """
+        if self.get_base_type () == other.get_base_type():
+            resp = self._client.equal_properties(self._id,other._id,self.get_base_type())
+            return resp.content['results'][0]
+        else:
+            return False
+            
+
 
 
 #
