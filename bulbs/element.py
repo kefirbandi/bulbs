@@ -184,7 +184,7 @@ class Element(object):
         # dict_.get() is faster than getattr()
         _initialized = dict_.get("_initialized", False)
 
-        if key in dict_ or _initialized is False:
+        if key in dict_ or _initialized is False or key in self.__class__.__dict__:
             # set the attribute normally
             object.__setattr__(self, key, value)
         else:
@@ -342,11 +342,14 @@ class Element(object):
         log.debug("This is deprecated; use data() instead.")
         return self.data()
 
-    def custom_step(self,script):
+    def custom_step(self,script,params={}):
         """
         Execute a custom gremlin step starting from the current element.
+	Do not use "_id" as a key in params.
         """
-        resp = self._client.custom_step(self._id, script)
+        full_script = 'g.v(_id).'+script
+        params['_id']=self._id
+        resp = self._client.gremlin(full_script,params)
         return initialize_elements(self._client,resp)
         
     def equivalent(self,other):
