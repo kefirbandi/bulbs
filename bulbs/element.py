@@ -346,7 +346,7 @@ class Element(object):
         """
         Execute a custom gremlin step starting from the current element.
         Do not use "_id" as a key in params.
-	e.g.: >>> node.custom_step('outE(x).bothV',{'x':'A'})
+        e.g.: >>> node.custom_step('outE(x).bothV',{'x':'A'})
         """
         full_script = 'g.v(_id).'+script
         params['_id']=self._id
