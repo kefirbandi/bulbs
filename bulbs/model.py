@@ -548,6 +548,8 @@ class Node(Model, Vertex):
 
         """
         data = self._get_property_data()
+        if hasattr(self,'__check__') and callable(self.__check__):
+                self.__check__(data)
         index_name = self.get_index_name(self._client.config)
         keys = self.get_index_keys()
         self._client.update_indexed_vertex(self._id, data, index_name, keys)
@@ -571,6 +573,8 @@ class Node(Model, Vertex):
         """
         # bundle is an OrderedDict containing data, index_name, and keys
         data, index_name, keys = self.get_bundle(_data, **kwds)
+        if hasattr(self,'__check__') and callable(self.__check__):
+            self.__check__(data)
         resp = self._client.create_indexed_vertex(data, index_name, keys)
         result = resp.one()
         self._initialize(result)
@@ -592,6 +596,8 @@ class Node(Model, Vertex):
         
         """
         data, index_name, keys = self.get_bundle(_data, **kwds)
+        if hasattr(self,'__check__') and callable(self.__check__):
+            self.__check__(data)
         resp = self._client.update_indexed_vertex(_id, data, index_name, keys)
         result = resp.one()
         self._initialize(result)
@@ -723,6 +729,9 @@ class Relationship(Model, Edge):
 
         """
         data = self._get_property_data()
+        if hasattr(self,'__check__') and callable(self.__check__):
+            self.__check__(data)
+
         index_name = self.get_index_name(self._client.config)
         keys = self.get_index_keys()
         self._client.update_indexed_edge(self._id, data, index_name, keys)
@@ -747,6 +756,8 @@ class Relationship(Model, Edge):
         label = self.get_label(self._client.config)
         outV, inV = coerce_vertices(outV, inV)
         data, index_name, keys = self.get_bundle(_data, **kwds)
+        if hasattr(self,'__check__') and callable(self.__check__):
+            self.__check__(data)
         resp = self._client.create_indexed_edge(outV, label, inV, data, index_name, keys)
         result = resp.one()
         self._initialize(result)
@@ -768,6 +779,8 @@ class Relationship(Model, Edge):
         
         """
         data, index_name, keys = self.get_bundle(_data, **kwds)
+        if hasattr(self,'__check__') and callable(self.__check__):
+            self.__check__(data)
         resp = self._client.update_indexed_edge(_id, data, index_name, keys)
         result = resp.one()
         self._initialize(result)
@@ -816,7 +829,7 @@ class NodeProxy(VertexProxy):
         :param _id: The vertex ID.
         :type _id: int or str
 
-        :param _data: Opetional property data dict.
+        :param _data: Optional property data dict.
         :type _data: dict
 
         :param kwds: Optional property data keyword pairs. 
