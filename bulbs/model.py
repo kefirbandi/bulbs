@@ -426,6 +426,8 @@ class Model(six.with_metaclass(ModelMeta, object)):  # Python 3
         log.debug("This is deprecated; use data() instead.")
         return self.data()
 
+    def __check__(self,data):
+        pass
 
 class Node(Model, Vertex):
     """ 
@@ -548,8 +550,8 @@ class Node(Model, Vertex):
 
         """
         data = self._get_property_data()
-        if hasattr(self,'__check__') and callable(self.__check__):
-                self.__check__(data)
+        #if hasattr(self,'__check__') and callable(self.__check__):
+        self.__check__(data)
         index_name = self.get_index_name(self._client.config)
         keys = self.get_index_keys()
         self._client.update_indexed_vertex(self._id, data, index_name, keys)
