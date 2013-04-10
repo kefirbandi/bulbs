@@ -5,6 +5,7 @@ import sre_compile
 from sre_constants import BRANCH, SUBPATTERN
 import hashlib
 from . import utils
+from collections import defaultdict
 
 # GroovyScripts is the only public class
 
@@ -13,6 +14,33 @@ from . import utils
 #
 
 # TODO: Simplify this. You don't need group pattern detection.
+
+class Replacer(object):
+    """ The aim of this object is to allow including of function definitions
+    within other functions for on-the-fly gremlin scripts """
+    p = re.compile('::([^:]*)::')
+    
+    def __init__(self,d,args):
+        self.repld = defaultdict(lambda : "")
+        self.d = d
+        self.args = args
+        
+        for k in self.d.iterkeys():
+            self.replace(k)
+    
+    def replace(self,k):
+        def replacewith(m):
+            o = m.group(1).strip()
+            return 'def %s%s{%s}' % (o,self.args[o],self.replace(o))
+
+        if not self.repld[k]:
+            self.repld[k] = re.sub(Replacer.p,
+                replacewith,
+                self.d[k])
+        return self.repld[k]
+    
+    def __call__(self):
+        return self.repld
 
 
 class GroovyScripts(object):
@@ -39,6 +67,7 @@ class GroovyScripts(object):
 
         # methods format: methods[method_name] = method_body
         self.methods = dict()
+        self.method_args = dict()
 
         if file_path is None:
             file_path = self._get_default_file()
@@ -67,8 +96,12 @@ class GroovyScripts(object):
         """
         file_path = os.path.abspath(file_path)
         methods = self._get_methods(file_path)
+        method_args = self._get_method_args(file_path)
         self._add_source_file(file_path)
         self.methods.update(methods)
+        self.method_args.update(method_args)
+        r = Replacer(self.methods, self.method_args)
+        self.methods = r()
 
     def refresh(self):
         """
@@ -87,6 +120,9 @@ class GroovyScripts(object):
 
     def _get_methods(self,file_path):
         return Parser(file_path).get_methods()
+
+    def _get_method_args(self,file_path):
+        return Parser(file_path).get_method_args()
 
     def _get_default_file(self):
         file_path = utils.get_file_path(__file__, self.default_file)
@@ -179,6 +215,7 @@ class Parser(object):
 
     def __init__(self, groovy_file):
         self.methods = {}
+        self.method_args = {}
         # handler format: (pattern, callback)
         handlers = [ ("^def( .*)", self.add_method), ]
         Scanner(handlers).scan(groovy_file)
@@ -186,11 +223,15 @@ class Parser(object):
     def get_methods(self):
         return self.methods
 
+    def get_method_args(self):
+        return self.method_args
+
     # Scanner Callback
     def add_method(self,scanner,token):
         method_definition = token
         method_signature = self._get_method_signature(method_definition)
         method_name = self._get_method_name(method_signature)
+        method_args = self._get_method_args(method_signature)
         method_body = self._get_method_body(method_definition)
         # NOTE: Not using sha1, signature, or the full method right now
         # because of the way the GSE works. It's easier to handle version
@@ -200,6 +241,7 @@ class Parser(object):
         #sha1 = self._get_sha1(method_definition)
         #self.methods[method_name] = (method_signature, method_definition, sha1)
         self.methods[method_name] = method_body
+        self.method_args[method_name] = method_args
 
     def _get_method_signature(self,method_definition):
         pattern = '^def(.*){'
@@ -207,6 +249,11 @@ class Parser(object):
             
     def _get_method_name(self,method_signature):
         pattern = '^(.*)\('
+        return re.search(pattern,method_signature).group(1).strip()
+
+
+    def _get_method_args( self,method_signature):
+        pattern = '(\(.*\))'
         return re.search(pattern,method_signature).group(1).strip()
 
     def _get_method_body(self,method_definition):
