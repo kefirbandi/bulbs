@@ -71,6 +71,18 @@ class Registry(object):
         """
         self.proxy_map[name] = proxy
 
+    def del_proxy(self, name):
+        """
+        Removes a proxy object from the registry.
+
+        :param name: Proxy name.
+        :type name: str
+
+        :rtype: None
+
+        """
+        self.proxy_map.pop(name,None)
+
     def get_proxy(self, name):
         """
         Returns proxy objects given the name.

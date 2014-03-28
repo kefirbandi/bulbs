@@ -105,6 +105,20 @@ class Graph(object):
         self.client.registry.add_proxy(proxy_name, proxy)
         setattr(self, proxy_name, proxy)
     
+    def del_proxy(self, proxy_name):
+        """
+        Removes an element proxy from the Graph object.
+
+        :param proxy_name: Attribute name to use for the proxy.
+        :type proxy_name: str
+
+        :rtype: None
+
+        """
+        self.client.registry.del_proxy(proxy_name)
+        if hasattr(self,proxy_name):
+            delattr(self, proxy_name)
+
     def build_proxy(self, element_class, index_class=None):
         """
         Returns an element proxy built to specifications.
