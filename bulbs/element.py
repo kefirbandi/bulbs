@@ -605,7 +605,7 @@ class VertexProxy(object):
         except LookupError:
             return None
         
-    def get_or_create(self, key, value, _data=None, **kwds):
+    def get_or_create(self, key, value, _data=None, try_no_index_if_index_fails = False, **kwds):
         """
         Lookup a vertex in the index and create it if it doesn't exsit.
 
@@ -629,6 +629,13 @@ class VertexProxy(object):
         # Relationship Models are set to index by default, but 
         # EdgeProxy doesn't have this method anyway.
         vertex = self.index.get_unique(key, value)
+        if (vertex is None) and try_no_index_if_index_fails:
+            params = {'element_type':self.element_class.element_type,
+                      'key':key,
+                      'value':value}
+            vertex0 = self.client.gremlin("g.V('element_type',element_type).has(key,value)",params)
+            vertex1 = initialize_elements(self.client,vertex0)
+            vertex = vertex1 and vertex1.next()
         if vertex is None:
             vertex = self.create(_data, **kwds)
         return vertex

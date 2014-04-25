@@ -1021,8 +1021,9 @@ class RexsterClient(Client):
 
     def rebuild_vertex_index(self, index_name):
         params = dict(index_name=index_name)
-        script = self.scripts.get('rebuild_vertex_index',params)
-        return self.gremlin(script)
+        script = self.scripts.get('rebuild_vertex_index')
+        #,params)
+        return self.gremlin(script,params)
 
     def rebuild_edge_index(self, index_name):
         params = dict(index_name=index_name)
