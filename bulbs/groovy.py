@@ -33,7 +33,8 @@ class Replacer(object):
             o = m.group(1).strip()
             #print "replace"
             #return 'def %s%s{%s}' % (o,self.args[o],self.replace(o))
-            return 'def %s\n%s = {%s -> %s}' % (o,o,self.args[o][1:-1],self.replace(o))
+            return 'def %s\n%s = {%s -> %s\n}// END: %s \n' % (o,o,self.args[o][1:-1],self.replace(o),o)
+            #return 'def %s\n%s = {%s -> %s\n}\n' % (o,o,self.args[o][1:-1],self.replace(o))
 
         if not self.repld[k]:
             self.repld[k] = re.sub(Replacer.p,
