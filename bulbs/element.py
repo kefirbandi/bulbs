@@ -605,7 +605,7 @@ class VertexProxy(object):
         except LookupError:
             return None
         
-    def get_or_create(self, key, value, _data=None, try_no_index_if_index_fails = False, **kwds):
+    def get_or_create(self, key, value, _data=None, try_no_index_if_index_fails = True, **kwds):
         """
         Lookup a vertex in the index and create it if it doesn't exsit.
 
@@ -628,7 +628,9 @@ class VertexProxy(object):
         # TODO: This will only index for non-models if autoindex is True.
         # Relationship Models are set to index by default, but 
         # EdgeProxy doesn't have this method anyway.
-        vertex = self.index.get_unique(key, value)
+        #vertex = self.index.get_unique(key, value)
+        #Had to disable index lookup, since it produced bullshit for some reason
+        vertex = None
         if (vertex is None) and try_no_index_if_index_fails:
             params = {'element_type':self.element_class.element_type,
                       'key':key,
